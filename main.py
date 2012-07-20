@@ -1,7 +1,8 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 
 import sys, os, time, threading, Queue
 from twisted.web import server
+from twisted.web.server import NOT_DONE_YET
 from twisted.web.resource import Resource
 from twisted.internet import reactor
 from twisted.web.static import File
@@ -9,29 +10,26 @@ from twisted.web.static import File
 class Publisher(object):
     def __init__(self):
         self.__lock = threading.Lock()
-        self.__stale_threshold = 1.0
-
-        self.__clients = {}
+        self.__requests = []
         
-    def getData(self, ip):
+    def registerForData(self, request):
         with self.__lock:
-            if ip not in self.__clients:
-                self.__clients[ip] = Queue.Queue()
-            queue = self.__clients[ip]
-            
-        return queue.get()
+            print "got request: %s" % str(request)
+            self.__requests.append(request)
 
     def notifyAll(self, data):
         with self.__lock:
-            for ip in self.__clients:
-                queue = self.__clients[ip]
-                queue.put(data)
+            for request in self.__requests:
+                request.write(data)
+                request.finish()
+            del self.__requests[:]
 
 publisher = Publisher()
 
 class PushedResource(Resource):
     def render_GET(self, request):
-        return publisher.getData(request.getClientIP())
+        publisher.registerForData(request)
+        return NOT_DONE_YET
 
 class ReaderThread(threading.Thread):
     def run(self):
@@ -43,11 +41,19 @@ class ReaderThread(threading.Thread):
             
             publisher.notifyAll(line.replace("\n", "<br/>"))
 
+class Trigger(Resource):
+    def render_GET(self, request):
+        publisher.notifyAll("boom")
+        return "boom"
 
 if __name__ == '__main__':
     root = File(os.getcwd())
     pushed_resource = PushedResource()
     root.putChild("published_text", pushed_resource)
+    root.putChild("control", File("/control.html"))
+
+    trigger = Trigger()
+    root.putChild("trigger", trigger)
     
     reader_thread = ReaderThread()
     reader_thread.start()
