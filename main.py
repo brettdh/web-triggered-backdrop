@@ -7,27 +7,51 @@ from twisted.web.resource import Resource
 from twisted.internet import reactor
 from twisted.web.static import File
 
+def print_on_enter(fn):
+    def printing_fn(*args):
+        print "entering %s" % fn.func_name
+        ret = fn(*args)
+        print "leaving %s" % fn.func_name
+        return ret
+    return printing_fn
+
 class Publisher(object):
     def __init__(self):
         self.__lock = threading.Lock()
         self.__requests = []
         
+    @print_on_enter
     def registerForData(self, request):
         with self.__lock:
-            print "got request: %s" % str(request)
+            print "got request: %s (total: %d)" % (str(request), len(self.__requests) + 1)
             self.__requests.append(request)
 
+    @print_on_enter
     def notifyAll(self, data):
         with self.__lock:
+            print "  Sending %d responses" % len(self.__requests)
             for request in self.__requests:
                 request.write(data)
                 request.finish()
             del self.__requests[:]
 
+    def cancel(self, request):
+        with self.__lock:
+            try:
+                self.__requests.remove(request)
+            except ValueError, e:
+                pass # ignore
+
 publisher = Publisher()
 
 class PushedResource(Resource):
+    def _responseFailed(self, err, request):
+        print err
+        publisher.cancel(request)
+
+    @print_on_enter
     def render_GET(self, request):
+        request.notifyFinish().addErrback(self._responseFailed, request)
         publisher.registerForData(request)
         return NOT_DONE_YET
 
@@ -58,7 +82,7 @@ if __name__ == '__main__':
     reader_thread = ReaderThread()
     reader_thread.start()
 
-    reactor.listenTCP(8080, server.Site(root))
+    reactor.listenTCP(9999, server.Site(root))
     reactor.run()
 
     reader_thread.join()
