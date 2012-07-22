@@ -1,0 +1,12 @@
+body {
+    overflow: hidden;
+    background: #d7d7d7;
+    color: #000000;
+    margin: 0;
+    padding: 0;
+}
+
+#makefire {
+    background: #000;
+    color: #fff;
+}

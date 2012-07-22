@@ -75,6 +75,7 @@ if __name__ == '__main__':
     pushed_resource = PushedResource()
     root.putChild("published_text", pushed_resource)
     root.putChild("control", File("/control.html"))
+    root.putChild("control_mobile", File("/control_mobile.html"))
 
     trigger = Trigger()
     root.putChild("trigger", trigger)
