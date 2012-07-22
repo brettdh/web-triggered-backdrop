@@ -60,5 +60,15 @@ $(document).ready(function () {
         loadeddata: load_fireball
     });
     
+    /*
+    $(window).keypress(function(e) {
+        $.get("/trigger", function(data) {
+            // ignore
+        }).error(function(data) {
+            // ignore
+        });
+    });
+    */
+
     get_published_text();
 });
