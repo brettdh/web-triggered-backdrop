@@ -1,6 +1,14 @@
 var fireball = null;
 var bomb = null;
 
+function setProgress(text) {
+    $("#progress").html(text);
+}
+
+function fadeProgress() {
+    $("#progress").fadeOut(1000);
+}
+
 var get_published_text = function() {
     $.get("/published_text", function(data) {
         if (data.match(/quit/)) {
@@ -18,10 +26,7 @@ var get_published_text = function() {
     }).error(function() {/* ignore */});
 };
 
-$(document).ready(function () {
-    fireball = $("#fireball");
-    bomb = $("#bomb");
-
+function load_fireball() {
     fireball.jPlayer({
         ready: function () {
             $(this).jPlayer("setMedia", {
@@ -31,8 +36,17 @@ $(document).ready(function () {
         supplied: "m4v",
         swfPath: "/js",
         fullScreen: true,
-        preload: "auto"
+        preload: "auto",
+        loadeddata: function() {
+            setProgress("Done");
+            fadeProgress();
+        }
     });
+}
+
+$(document).ready(function () {
+    fireball = $("#fireball");
+    bomb = $("#bomb");
     
     bomb.jPlayer({
         ready: function() {
@@ -42,7 +56,8 @@ $(document).ready(function () {
         },
         supplied: "mp3",
         swfPath: "/js",
-        preload: "auto"
+        preload: "auto",
+        loadeddata: load_fireball
     });
     
     get_published_text();

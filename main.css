@@ -1,0 +1,8 @@
+#progress {
+    font-size: 72pt;
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    color: #ffffff; 
+    z-index: 1
+}
