@@ -20,13 +20,12 @@ class Publisher(object):
         self.__lock = threading.Lock()
         self.__requests = []
         
-    @print_on_enter
     def registerForData(self, request):
         with self.__lock:
-            print "got request: %s (total: %d)" % (str(request), len(self.__requests) + 1)
+            print ("%s  **  got request: %s (total: %d)" %
+                   (time.ctime(), str(request), len(self.__requests) + 1))
             self.__requests.append(request)
 
-    @print_on_enter
     def notifyAll(self, data):
         with self.__lock:
             print "  Sending %d responses" % len(self.__requests)
@@ -49,7 +48,6 @@ class PushedResource(Resource):
         print err
         publisher.cancel(request)
 
-    @print_on_enter
     def render_GET(self, request):
         request.notifyFinish().addErrback(self._responseFailed, request)
         publisher.registerForData(request)
