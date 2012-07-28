@@ -1,0 +1,66 @@
+This is a Python-based web app that I hacked together* to use as a
+backdrop for a band that I played in.  The page as-is shows a giant
+fireball and plays an explosion sound effect, when triggered.
+
+In order to make this work, I needed to be able to trigger it from the
+stage.  So, I hacked up* an iPhone web app that sends an AJAX request
+to the server, which then sends a message to all HTTP clients that are 
+waiting for it.
+
+I wasn't sure of the best way to send asynchronous messages from
+server->client, and frantic Googling wasn't turning up results quickly
+enough, so I just had the page make an AJAX request to my Python web
+server, which then waits to respond until it receives a trigger
+request.  When the page receives the response, it starts the audio
+and video.
+
+Turns out it worked pretty well!  Naturally, I noticed that the latency
+between my trigger tap on my iPhone and the arrival of the fireball
+varied depending on what network the client and trigger-phone were on.
+It was nigh-instantaneous on the U-M campus WiFi and my home WiFi, but 
+at the church where I performed the song, there was about a 600-700ms
+delay from tap to boom - which works out to about two quarter notes at 
+180 beats per minute.  Just enough time for me to stop playing, tap,
+and then get back into it.
+
+There's going to be a video of this in action; I may come back and 
+update this when that makes it to YouTube.  Just for funsies.
+
+Requirements:
+  Server:
+  - Python
+  - Twisted (http://www.twistedmatrix.com/)
+
+  Client: (these are included)
+  - JQuery (http://www.jquery.com/)
+  - JPlayer (http://www.jplayer.org/)
+
+Usage:
+  1) Start up the server (main.py).
+  2) Point your browser at http://(server):(port)/
+  3) Point your phone at http://(server):(port)/control_mobile.html
+     (tested on iOS 5.1.1; probably works on other mobile browsers
+      that fire the 'touchstart' event.
+     Alternatively, you can use /control.html , which uses onclick.
+  4) Tap the screen.  It should flash from black to red to black.
+     (red means the request was sent; black again means it was acknowledged.)
+  
+  The video and audio should play.  (boom! *fwoosh* oooh, ahhh)
+
+
+* - emphasis on HACKED.  I'm pretty new to these areas, and I just
+    wanted to get it working quickly, so I haven't yet gone back to Do
+    It Right.  Then again, it might not be too far off, as JQuery and
+    JPlayer make it pretty straightforward to do some of the tricker
+    bits.  It's defintely unpolished, though.  I figured it would be 
+    cool to share, though, since it was fun to put together, it added
+    a bit extra ROCK to our performance, and maybe it saves someone
+    somewhere some time.
+
+The page includes a video and a sound effect as examples.
+  Fireball video is from here:
+    http://www.youtube.com/watch?v=X8ipjZyxcXY
+
+  Bomb sound effect is from I don't remember where.
+
+  It'd be easy enough to swap them out for your own if you wanted.
